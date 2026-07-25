@@ -1,2 +1,4 @@
 .env
 node_modules/
+/src/seed/seedUsers.js
+/src/seed/seedProduct.js

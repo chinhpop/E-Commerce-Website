@@ -4,6 +4,9 @@
   "main": "src/server.js",
   "type": "module",
   "scripts": {
+    "seed": "node src/seed/seedUsers.js",
+    "seed:products": "node src/seed/seedProduct.js",
+    "seed:all": "npm run seed && npm run seed:products",
     "dev": "nodemon src/server.js",
     "start": "node src/server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
