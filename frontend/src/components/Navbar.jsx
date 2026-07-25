@@ -1,38 +1,82 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useSelector, useDispatch } from "react-redux";
+import toast from "react-hot-toast";
+import api from "../services/api";
+import { logout } from "../store/slices/authSlice";
 
-function Navbar() {
+const Navbar = () => {
+  const { user } = useSelector((state) => state.auth);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    try {
+      const refreshToken = localStorage.getItem("refreshToken");
+      await api.post("/auth/logout", { refreshToken });
+    } catch (err) {
+      console.log(err);
+    } finally {
+      dispatch(logout());
+      localStorage.clear();
+      toast.success("Đăng xuất thành công!");
+      navigate("/login");
+    }
+  };
+
   return (
-    <nav className="bg-white shadow-md">
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-        {/* Logo */}
+    <nav className="bg-white shadow">
+      <div className="max-w-7xl mx-auto px-6 h-16 flex justify-between items-center">
+
         <Link
           to="/"
           className="text-2xl font-bold text-blue-600"
         >
-          ShopEasy
+          E-Commerce
         </Link>
 
-        {/* Menu bên phải */}
-        <div className="flex items-center gap-4">
-          {/* Cart */}
-          <button
-            className="rounded-full p-2 transition hover:bg-gray-100"
-            aria-label="Cart"
-          >
-            🛒
-          </button>
-
-          {/* Login */}
+        <div className="flex items-center gap-5">
           <Link
-            to="/login"
-            className="rounded-lg bg-blue-600 px-4 py-2 font-medium text-white transition hover:bg-blue-700"
+            to="/"
+            className="text-gray-700 hover:text-blue-600 transition"
           >
-            Login
+            Trang chủ
           </Link>
+
+          {user ? (
+            <>
+              <span className="font-medium">
+                Xin chào, {user.name}
+              </span>
+
+              <button
+                onClick={handleLogout}
+                className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition"
+              >
+                Đăng xuất
+              </button>
+            </>
+          ) : (
+            <>
+              <Link
+                to="/login"
+                className="hover:text-blue-600 transition"
+              >
+                Đăng nhập
+              </Link>
+
+              <Link
+                to="/register"
+                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition"
+              >
+                Đăng ký
+              </Link>
+            </>
+          )}
         </div>
+
       </div>
     </nav>
   );
-}
+};
 
 export default Navbar;
