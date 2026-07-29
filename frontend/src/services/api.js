@@ -1,30 +1,29 @@
-import axios from "axios";
-import store from "../store/store";
-import { logout, setAccessToken } from "../store/slices/authSlice";
+import axios from 'axios';
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "http://localhost:5000/api",
+  baseURL: import.meta.env.VITE_API_URL || '/api',
+  headers: { 'Content-Type': 'application/json' },
 });
 
-// Gắn access token vào mọi request
+// Tự động gắn access token vào mọi request nếu có
 api.interceptors.request.use((config) => {
-  const token = store.getState().auth.token || localStorage.getItem("accessToken");
+  const token = localStorage.getItem('accessToken');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
 });
 
-// Tự động refresh khi access token hết hạn (401)
+// Tự động thử refresh token khi gặp lỗi 401 (access token hết hạn)
 let isRefreshing = false;
-let failedQueue = [];
+let pendingQueue = [];
 
 const processQueue = (error, token = null) => {
-  failedQueue.forEach((prom) => {
-    if (error) prom.reject(error);
-    else prom.resolve(token);
+  pendingQueue.forEach(({ resolve, reject }) => {
+    if (error) reject(error);
+    else resolve(token);
   });
-  failedQueue = [];
+  pendingQueue = [];
 };
 
 api.interceptors.response.use(
@@ -32,11 +31,10 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    if (error.response?.status === 401 && !originalRequest._retry && !originalRequest.url.includes('/auth/')) {
       if (isRefreshing) {
-        // Nếu đang refresh rồi, xếp hàng chờ
         return new Promise((resolve, reject) => {
-          failedQueue.push({ resolve, reject });
+          pendingQueue.push({ resolve, reject });
         }).then((token) => {
           originalRequest.headers.Authorization = `Bearer ${token}`;
           return api(originalRequest);
@@ -46,24 +44,24 @@ api.interceptors.response.use(
       originalRequest._retry = true;
       isRefreshing = true;
 
-      const refreshToken = localStorage.getItem("refreshToken");
-
       try {
+        const refreshToken = localStorage.getItem('refreshToken');
         const { data } = await axios.post(
-          `${import.meta.env.VITE_API_URL}/auth/refresh`,
+          `${import.meta.env.VITE_API_URL || '/api'}/auth/refresh`,
           { refreshToken }
         );
-        localStorage.setItem("accessToken", data.accessToken);
-        store.dispatch(setAccessToken(data.accessToken));
+        const newAccessToken = data.data.accessToken;
 
-        processQueue(null, data.accessToken);
-        originalRequest.headers.Authorization = `Bearer ${data.accessToken}`;
+        localStorage.setItem('accessToken', newAccessToken);
+        processQueue(null, newAccessToken);
+
+        originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
         return api(originalRequest);
       } catch (refreshError) {
         processQueue(refreshError, null);
-        store.dispatch(logout());
-        localStorage.clear();
-        window.location.href = "/login";
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
+        window.location.href = '/login';
         return Promise.reject(refreshError);
       } finally {
         isRefreshing = false;

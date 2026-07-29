@@ -1,24 +1,22 @@
-import { Routes, Route } from "react-router-dom";
-import Navbar from "./components/Navbar";
-import { Toaster } from "react-hot-toast";
-
-import Home from "./pages/Home";
-import Login from "./pages/Login";
-import Register from "./pages/Register";
+import { Routes, Route } from 'react-router-dom';
+import Navbar from './components/Navbar';
+import HomePage from './pages/HomePage';
+import ProductDetailPage from './pages/ProductDetailPage';
+import LoginPage from './pages/LoginPage';
+import RegisterPage from './pages/RegisterPage';
 
 function App() {
   return (
-    <>
+    <div className="min-h-screen">
       <Navbar />
-
       <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
+        <Route path="/" element={<HomePage />} />
+        <Route path="/products/:id" element={<ProductDetailPage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+        {/* /cart sẽ được thêm ở Tuần 2 */}
       </Routes>
-
-      <Toaster position="top-right" reverseOrder={false} />
-    </>
+    </div>
   );
 }
 
