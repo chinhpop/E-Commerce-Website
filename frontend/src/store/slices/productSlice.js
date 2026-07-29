@@ -33,8 +33,14 @@ const productSlice = createSlice({
       .addCase(fetchProducts.fulfilled, (state, action) => {
         state.loading = false;
         state.items = action.payload.data;
-        state.pagination = action.payload.pagination;
-      })
+
+        state.pagination = {
+          page: action.payload.page,
+          limit: 10,
+          total: action.payload.total,
+          totalPages: action.payload.totalPages,
+    };
+})
       .addCase(fetchProducts.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;

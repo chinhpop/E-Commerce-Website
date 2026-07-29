@@ -1,12 +1,21 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { registerUser, loginUser, logoutUser } from '../../services/authService';
 
-const storedUser = localStorage.getItem('user');
+const storedUser = localStorage.getItem("user");
+
+let parsedUser = null;
+
+try {
+  parsedUser = storedUser ? JSON.parse(storedUser) : null;
+} catch (error) {
+  localStorage.removeItem("user");
+  parsedUser = null;
+}
 
 const initialState = {
-  user: storedUser ? JSON.parse(storedUser) : null,
-  accessToken: localStorage.getItem('accessToken') || null,
-  refreshToken: localStorage.getItem('refreshToken') || null,
+  user: parsedUser,
+  accessToken: localStorage.getItem("accessToken"),
+  refreshToken: localStorage.getItem("refreshToken"),
   loading: false,
   error: null,
 };
