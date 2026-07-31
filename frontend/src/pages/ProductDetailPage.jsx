@@ -36,6 +36,7 @@ const ProductDetailPage = () => {
   }
 
   if (error || !product) {
+    console.log(product);
     return (
       <div className="max-w-4xl mx-auto px-4 py-12 text-center">
         <p className="text-red-500 mb-4">{error || 'Sản phẩm không tồn tại'}</p>
@@ -46,7 +47,7 @@ const ProductDetailPage = () => {
     );
   }
 
-  const image = product.images?.[0] || FALLBACK_IMAGE;
+  const image = product.images?.[0]?.url || FALLBACK_IMAGE;
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
@@ -58,7 +59,7 @@ const ProductDetailPage = () => {
           <h1 className="text-2xl font-bold mb-2">{product.name}</h1>
           <p className="text-gray-600 mb-4">{product.description}</p>
 
-          <p className="text-3xl font-bold text-gray-900 mb-2">${product.price.toFixed(2)}</p>
+          <p className="text-3xl font-bold text-gray-900 mb-2">${product?.price?.toFixed(2)}</p>
           <p className="text-sm text-gray-500 mb-6">
             {product.stock > 0 ? `Còn ${product.stock} sản phẩm trong kho` : 'Hết hàng'}
           </p>

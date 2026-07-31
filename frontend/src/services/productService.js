@@ -7,7 +7,7 @@ export const getAllProducts = async ({ page = 1, limit = 10, category, search } 
 
 export const getProductById = async (id) => {
   const { data } = await api.get(`/products/${id}`);
-  return data.data;
+  return data.data.product;
 };
 
 export const createProduct = async (payload) => {
