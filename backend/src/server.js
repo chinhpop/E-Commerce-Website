@@ -8,6 +8,7 @@ import connectDB from "./config/db.js";
 import authRoutes from "./routes/auth.js";
 import errorHandler from "./middleware/errorHandler.js";
 import productRoutes from "./routes/product.js";
+import cartRoutes from "./routes/cart.js";
 
 dotenv.config();
 
@@ -21,6 +22,7 @@ app.use(express.json());
 
 app.use("/api/auth", authRoutes);
 app.use("/api/products", productRoutes);
+app.use("/api/cart", cartRoutes);
 
 app.get("/", (req, res) => {
   res.status(200).json({

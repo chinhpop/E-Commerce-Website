@@ -64,5 +64,4 @@ const productSchema = new mongoose.Schema(
 // Index cho tìm kiếm full-text theo tên + lọc nhanh theo category
 productSchema.index({ name: "text", category: 1 });
 
-const Product = mongoose.model("Product", productSchema);
-export default Product;
+export default mongoose.model("Product", productSchema);
