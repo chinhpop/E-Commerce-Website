@@ -42,6 +42,15 @@ const Navbar = () => {
             Trang chủ
           </Link>
 
+          {(user?.role === "seller" || user?.role === "admin") && (
+            <Link
+              to="/seller/products"
+              className="text-gray-700 hover:text-blue-600 transition"
+            >
+              Sản phẩm của tôi
+            </Link>
+          )}
+
           {user ? (
             <>
               <span className="font-medium">

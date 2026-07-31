@@ -5,6 +5,11 @@ export const getAllProducts = async ({ page = 1, limit = 10, category, search } 
   return data; // { success, data: [...], pagination }
 };
 
+export const getMyProducts = async ({ page = 1, limit = 100 } = {}) => {
+  const { data } = await api.get('/products/my-products', { params: { page, limit } });
+  return data.data; // { success, data: [...], pagination }
+};
+
 export const getProductById = async (id) => {
   const { data } = await api.get(`/products/${id}`);
   return data.data.product;

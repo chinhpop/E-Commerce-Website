@@ -5,6 +5,7 @@ import {
   createProduct,
   updateProduct,
   deleteProduct,
+  getMyProducts,
 } from "../controllers/productController.js";
 import { protect } from "../middleware/auth.js";
 import { authorize } from "../middleware/roleCheck.js";
@@ -13,6 +14,7 @@ const router = express.Router();
 
 // Public routes
 router.get("/", getProducts);
+router.get("/my-products", protect, authorize("seller", "admin"), getMyProducts);
 router.get("/:id", getProductById);
 
 // Private routes — cần đăng nhập + đúng role

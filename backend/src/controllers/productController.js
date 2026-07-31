@@ -72,6 +72,43 @@ export const getProductById = async (req, res, next) => {
   }
 };
 
+// @desc    Get products belonging to the currently authenticated seller
+// @route   GET /api/products/my-products?page=1&limit=10
+// @access  Private (seller, admin)
+export const getMyProducts = async (req, res, next) => {
+  try {
+    const page = Math.max(parseInt(req.query.page, 10) || 1, 1);
+    const limit = Math.max(parseInt(req.query.limit, 10) || 10, 1);
+    const skip = (page - 1) * limit;
+
+    // Dùng req.user._id để đồng nhất với các hàm khác trong file này
+    // (middleware protect gắn cả object user vào req.user, không phải req.userId)
+    const filter = { seller: req.user._id };
+
+    const [products, total] = await Promise.all([
+      Product.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit),
+      Product.countDocuments(filter),
+    ]);
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        products,
+        pagination: {
+          total,
+          page,
+          limit,
+          totalPages: Math.ceil(total / limit),
+          hasNextPage: page * limit < total,
+          hasPrevPage: page > 1,
+        },
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 // @route   POST /api/products
 // @access  Private (seller, admin)
 export const createProduct = async (req, res, next) => {
