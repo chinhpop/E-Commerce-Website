@@ -6,6 +6,7 @@ import ProductDetailPage from './pages/ProductDetailPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import SellerDashboard from './pages/SellerDashboard';
+import CartPage from './pages/CartPage';
 
 function App() {
   return (
@@ -24,7 +25,14 @@ function App() {
             </ProtectedRoute>
           }
         />
-        {/* /cart sẽ được thêm ở Tuần 2 */}
+        <Route
+          path="/cart"
+          element={
+            <ProtectedRoute>
+              <CartPage />
+            </ProtectedRoute>
+          }
+        />
       </Routes>
     </div>
   );

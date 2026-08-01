@@ -1,13 +1,24 @@
+import { useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import toast from "react-hot-toast";
 import api from "../services/api";
 import { logout } from "../store/slices/authSlice";
+import { fetchCart, resetCart } from "../store/slices/cartSlice";
 
 const Navbar = () => {
   const { user } = useSelector((state) => state.auth);
+  const { totalItems } = useSelector((state) => state.cart);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+
+  // Tải giỏ hàng ngay khi có user đăng nhập (để badge hiện đúng số lượng
+  // kể cả khi user F5 lại trang hoặc mới login xong)
+  useEffect(() => {
+    if (user) {
+      dispatch(fetchCart());
+    }
+  }, [user, dispatch]);
 
   const handleLogout = async () => {
     try {
@@ -17,6 +28,7 @@ const Navbar = () => {
       console.log(err);
     } finally {
       dispatch(logout());
+      dispatch(resetCart());
       localStorage.clear();
       toast.success("Đăng xuất thành công!");
       navigate("/login");
@@ -48,6 +60,21 @@ const Navbar = () => {
               className="text-gray-700 hover:text-blue-600 transition"
             >
               Sản phẩm của tôi
+            </Link>
+          )}
+
+          {user && (
+            <Link
+              to="/cart"
+              className="relative text-gray-700 hover:text-blue-600 transition"
+              aria-label="Giỏ hàng"
+            >
+              🛒
+              {totalItems > 0 && (
+                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                  {totalItems > 99 ? "99+" : totalItems}
+                </span>
+              )}
             </Link>
           )}
 
