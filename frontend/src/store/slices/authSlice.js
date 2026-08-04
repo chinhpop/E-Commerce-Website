@@ -7,7 +7,7 @@ let parsedUser = null;
 
 try {
   parsedUser = storedUser ? JSON.parse(storedUser) : null;
-} catch (error) {
+} catch {
   localStorage.removeItem("user");
   parsedUser = null;
 }
@@ -56,7 +56,7 @@ export const logout = createAsyncThunk('auth/logout', async (_, { getState }) =>
   const { refreshToken } = getState().auth;
   try {
     await logoutUser(refreshToken);
-  } catch (err) {
+  } catch {
     // Ngay cả khi API lỗi, vẫn clear phía client
   }
   clearAuthStorage();
