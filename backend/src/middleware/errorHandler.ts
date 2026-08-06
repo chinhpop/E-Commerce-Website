@@ -1,6 +1,8 @@
+import express from "express";
+
 // Global error handler — luôn đặt SAU tất cả route trong server.js
 // Express nhận diện đây là error handler nhờ có 4 tham số (err, req, res, next)
-const errorHandler = (err, req, res, next) => {
+const errorHandler = (err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
   console.error(err.stack);
 
   let statusCode = err.statusCode || 500;
@@ -9,8 +11,9 @@ const errorHandler = (err, req, res, next) => {
   // Lỗi validate của Mongoose
   if (err.name === "ValidationError") {
     statusCode = 400;
-    message = Object.values(err.errors)
-      .map((e) => e.message)
+    const validationErrors = Object.values((err as any).errors ?? {}) as Array<{ message?: string }>;
+    message = validationErrors
+      .map((e) => e.message || "Dữ liệu không hợp lệ")
       .join(", ");
   }
 

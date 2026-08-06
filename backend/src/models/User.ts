@@ -1,7 +1,16 @@
-import mongoose from "mongoose";
+import mongoose, { Document, Model, Schema } from "mongoose";
 import bcrypt from "bcrypt";
 
-const userSchema = new mongoose.Schema(
+export interface IUser extends Document {
+  name: string;
+  email: string;
+  password: string;
+  role: "user" | "seller" | "admin";
+  refreshToken: string | null;
+  comparePassword(candidatePassword: string): Promise<boolean>;
+}
+
+const userSchema = new Schema<IUser>(
   {
     name: {
       type: String,
@@ -11,7 +20,7 @@ const userSchema = new mongoose.Schema(
     email: {
       type: String,
       required: [true, "Email is required"],
-      unique: true, // tạo index unique ở tầng DB, tránh trùng email
+      unique: true,
       lowercase: true,
       trim: true,
       match: [/^\S+@\S+\.\S+$/, "Invalid email format"],
@@ -20,23 +29,23 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: [true, "Password is required"],
       minlength: [6, "Password must be at least 6 characters"],
-      select: false, // mặc định không trả password khi query, phải .select("+password") nếu cần
+      select: false,
     },
     role: {
       type: String,
-      enum: ["user","seller" ,"admin"],
+      enum: ["user", "seller", "admin"],
       default: "user",
     },
-    refreshToken: { 
-      type: String, default: null 
+    refreshToken: {
+      type: String,
+      default: null,
     },
   },
   {
-    timestamps: true, // tự thêm createdAt, updatedAt
+    timestamps: true,
   }
 );
 
-// Pre-save hook: chỉ hash lại password nếu nó bị thay đổi (tạo mới hoặc update password)
 userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) {
     return next();
@@ -46,14 +55,18 @@ userSchema.pre("save", async function (next) {
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);
     next();
-  } catch (err) {
-    next(err);
+  } catch (error) {
+    next(error as Error);
   }
 });
 
-// Method instance để so sánh password khi login
-userSchema.methods.comparePassword = async function (candidatePassword) {
+userSchema.methods.comparePassword = async function (
+  this: IUser,
+  candidatePassword: string
+): Promise<boolean> {
   return bcrypt.compare(candidatePassword, this.password);
 };
 
-export default mongoose.model("User", userSchema);
+const User: Model<IUser> = mongoose.model<IUser>("User", userSchema);
+
+export default User;

@@ -1,6 +1,28 @@
-import mongoose from "mongoose";
+import mongoose, { Document, Model, Schema, Types } from "mongoose";
 
-const productSchema = new mongoose.Schema(
+export interface IProductImage {
+  url: string;
+  publicId?: string;
+}
+
+export interface IProduct extends Document {
+  name: string;
+  description: string;
+  category: string;
+  price: number;
+  stock: number;
+  images: IProductImage[];
+  seller: Types.ObjectId;
+  ratings: {
+    average: number;
+    count: number;
+  };
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+const productSchema = new Schema<IProduct>(
   {
     name: {
       type: String,
@@ -32,12 +54,17 @@ const productSchema = new mongoose.Schema(
     },
     images: [
       {
-        url: { type: String, required: true },
-        publicId: { type: String }, // dùng nếu upload qua Cloudinary
+        url: {
+          type: String,
+          required: true,
+        },
+        publicId: {
+          type: String,
+        },
       },
     ],
     seller: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: Schema.Types.ObjectId,
       ref: "User",
       required: true,
     },
@@ -55,13 +82,22 @@ const productSchema = new mongoose.Schema(
     },
     isActive: {
       type: Boolean,
-      default: true, // cho phép "ẩn" sản phẩm thay vì xóa cứng
+      default: true,
     },
   },
-  { timestamps: true }
+  {
+    timestamps: true,
+  }
 );
 
-// Index cho tìm kiếm full-text theo tên + lọc nhanh theo category
-productSchema.index({ name: "text", category: 1 });
+productSchema.index({
+  name: "text",
+  category: 1,
+});
 
-export default mongoose.model("Product", productSchema);
+const Product: Model<IProduct> = mongoose.model<IProduct>(
+  "Product",
+  productSchema
+);
+
+export default Product;

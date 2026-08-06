@@ -1,8 +1,9 @@
+import express from "express";
 import Cart from "../models/Cart.js";
 import Product from "../models/Product.js";
 
 // Lấy cart của user, tạo mới nếu chưa có (mỗi user chỉ có 1 cart duy nhất)
-const getOrCreateCart = async (userId) => {
+const getOrCreateCart = async (userId: string) => {
   let cart = await Cart.findOne({ user: userId });
   if (!cart) {
     cart = await Cart.create({ user: userId, items: [] });
@@ -12,13 +13,13 @@ const getOrCreateCart = async (userId) => {
 
 // Tính lại tổng số lượng + tổng tiền từ cart đã populate product
 // Bỏ qua item nào có product đã bị xóa khỏi hệ thống (product populate ra null)
-const buildCartSummary = (cart) => {
+const buildCartSummary = (cart: any) => {
   let totalItems = 0;
   let totalPrice = 0;
 
   const items = cart.items
-    .filter((item) => item.product)
-    .map((item) => {
+    .filter((item: any) => item.product)
+    .map((item: any) => {
       const subtotal = item.product.price * item.quantity;
       totalItems += item.quantity;
       totalPrice += subtotal;
@@ -35,7 +36,11 @@ const buildCartSummary = (cart) => {
 
 // @route   GET /api/cart
 // @access  Private
-export const getCart = async (req, res, next) => {
+export const getCart = async (
+  req: express.Request & { user: { _id: string } },
+  res: express.Response,
+  next: express.NextFunction
+) => {
   try {
     const cart = await getOrCreateCart(req.user._id);
     await cart.populate("items.product", "name price stock images category");
@@ -54,7 +59,11 @@ export const getCart = async (req, res, next) => {
 // @route   POST /api/cart
 // @body    { productId, quantity }
 // @access  Private
-export const addToCart = async (req, res, next) => {
+export const addToCart = async (
+  req: express.Request & { user: { _id: string }; body: { productId?: string; quantity?: number } },
+  res: express.Response,
+  next: express.NextFunction
+) => {
   try {
     const { productId, quantity } = req.body;
     const qty = Number(quantity);
@@ -113,7 +122,11 @@ export const addToCart = async (req, res, next) => {
 // @route   PUT /api/cart/:productId
 // @body    { quantity }
 // @access  Private
-export const updateCartItem = async (req, res, next) => {
+export const updateCartItem = async (
+  req: express.Request & { user: { _id: string }; body: { quantity?: number }; params: { productId?: string } },
+  res: express.Response,
+  next: express.NextFunction
+) => {
   try {
     const { productId } = req.params;
     const qty = Number(req.body.quantity);
@@ -166,7 +179,11 @@ export const updateCartItem = async (req, res, next) => {
 
 // @route   DELETE /api/cart/:productId
 // @access  Private
-export const removeFromCart = async (req, res, next) => {
+export const removeFromCart = async (
+  req: express.Request & { user: { _id: string }; params: { productId?: string } },
+  res: express.Response,
+  next: express.NextFunction
+) => {
   try {
     const { productId } = req.params;
 
@@ -180,7 +197,7 @@ export const removeFromCart = async (req, res, next) => {
       return res.status(404).json({ success: false, message: "Sản phẩm không có trong giỏ hàng" });
     }
 
-    cart.items = cart.items.filter((i) => i.product.toString() !== productId);
+    cart.items = cart.items.filter((i: any) => i.product.toString() !== productId) as any;
     await cart.save();
     await cart.populate("items.product", "name price stock images category");
 
@@ -198,14 +215,18 @@ export const removeFromCart = async (req, res, next) => {
 
 // @route   DELETE /api/cart
 // @access  Private
-export const clearCart = async (req, res, next) => {
+export const clearCart = async (
+  req: express.Request & { user: { _id: string } },
+  res: express.Response,
+  next: express.NextFunction
+) => {
   try {
     const cart = await Cart.findOne({ user: req.user._id });
     if (!cart) {
       return res.status(404).json({ success: false, message: "Giỏ hàng đang trống" });
     }
 
-    cart.items = [];
+    cart.items = [] as any;
     await cart.save();
 
     return res.status(200).json({

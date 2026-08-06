@@ -1,5 +1,7 @@
-export const authorize = (...roles) => {
-  return (req, res, next) => {
+import express from "express";
+
+export const authorize = (...roles: string[]) => {
+  return (req: express.Request & { user?: { role?: string } }, res: express.Response, next: express.NextFunction) => {
     // Middleware này PHẢI chạy sau protect, vì cần req.user đã được gắn sẵn
     if (!req.user) {
       return res.status(401).json({

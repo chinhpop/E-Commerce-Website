@@ -1,15 +1,26 @@
+import express from "express";
 import Product from "../models/Product.js";
+
+interface ProductQuery extends Record<string, string | undefined> {
+  page?: string;
+  limit?: string;
+  category?: string;
+  search?: string;
+}
 
 // @route   GET /api/products
 // @access  Public
-export const getProducts = async (req, res, next) => {
+export const getProducts = async (
+  req: express.Request & { query: ProductQuery },
+  res: express.Response,
+  next: express.NextFunction
+) => {
   try {
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
+    const page = Number.parseInt(req.query.page ?? "1", 10) || 1;
+    const limit = Number.parseInt(req.query.limit ?? "10", 10) || 10;
     const skip = (page - 1) * limit;
 
-    // Filter tuỳ chọn theo category / search text
-    const filter = { isActive: true };
+    const filter: Record<string, unknown> = { isActive: true };
     if (req.query.category) {
       filter.category = req.query.category.toLowerCase();
     }
@@ -47,7 +58,11 @@ export const getProducts = async (req, res, next) => {
 
 // @route   GET /api/products/:id
 // @access  Public
-export const getProductById = async (req, res, next) => {
+export const getProductById = async (
+  req: express.Request & { params: { id: string } },
+  res: express.Response,
+  next: express.NextFunction
+) => {
   try {
     const product = await Product.findById(req.params.id).populate(
       "seller",
@@ -75,10 +90,14 @@ export const getProductById = async (req, res, next) => {
 // @desc    Get products belonging to the currently authenticated seller
 // @route   GET /api/products/my-products?page=1&limit=10
 // @access  Private (seller, admin)
-export const getMyProducts = async (req, res, next) => {
+export const getMyProducts = async (
+  req: express.Request & { query: ProductQuery; user?: { _id: string; role: string } },
+  res: express.Response,
+  next: express.NextFunction
+) => {
   try {
-    const page = Math.max(parseInt(req.query.page, 10) || 1, 1);
-    const limit = Math.max(parseInt(req.query.limit, 10) || 10, 1);
+    const page = Math.max(Number.parseInt(req.query.page ?? "1", 10) || 1, 1);
+    const limit = Math.max(Number.parseInt(req.query.limit ?? "10", 10) || 10, 1);
     const skip = (page - 1) * limit;
 
     // Dùng req.user._id để đồng nhất với các hàm khác trong file này
@@ -111,7 +130,11 @@ export const getMyProducts = async (req, res, next) => {
 
 // @route   POST /api/products
 // @access  Private (seller, admin)
-export const createProduct = async (req, res, next) => {
+export const createProduct = async (
+  req: express.Request & { body: any; user?: { _id: string; role: string } },
+  res: express.Response,
+  next: express.NextFunction
+) => {
   try {
     const { name, description, category, price, stock, images } = req.body;
 
@@ -144,7 +167,11 @@ export const createProduct = async (req, res, next) => {
 
 // @route   PUT /api/products/:id
 // @access  Private (chỉ chủ sở hữu hoặc admin)
-export const updateProduct = async (req, res, next) => {
+export const updateProduct = async (
+  req: express.Request & { body: any; params: { id: string }; user?: { _id: string; role: string } },
+  res: express.Response,
+  next: express.NextFunction
+) => {
   try {
     const product = await Product.findById(req.params.id);
 
@@ -187,7 +214,11 @@ export const updateProduct = async (req, res, next) => {
 
 // @route   DELETE /api/products/:id
 // @access  Private (chỉ chủ sở hữu hoặc admin)
-export const deleteProduct = async (req, res, next) => {
+export const deleteProduct = async (
+  req: express.Request & { params: { id: string }; user?: { _id: string; role: string } },
+  res: express.Response,
+  next: express.NextFunction
+) => {
   try {
     const product = await Product.findById(req.params.id);
 
