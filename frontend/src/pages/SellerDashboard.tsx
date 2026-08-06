@@ -4,7 +4,26 @@ import { PRODUCT_CATEGORIES } from '../constants/categories';
 import { getMyProducts, createProduct, deleteProduct } from '../services/productService';
 import EditProductModal from '../components/Product/EditProductModal';
 
-const EMPTY_FORM = {
+type ProductFormState = {
+  name: string;
+  description: string;
+  category: string;
+  price: string | number;
+  stock: string | number;
+  imageUrl: string;
+};
+
+type SellerProduct = {
+  _id: string;
+  name: string;
+  description: string;
+  category: string;
+  price: number;
+  stock: number;
+  images?: string[];
+};
+
+const EMPTY_FORM: ProductFormState = {
   name: '',
   description: '',
   category: PRODUCT_CATEGORIES[0],
@@ -14,15 +33,15 @@ const EMPTY_FORM = {
 };
 
 const SellerDashboard = () => {
-  const [products, setProducts] = useState([]);
+  const [products, setProducts] = useState<SellerProduct[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const [formData, setFormData] = useState(EMPTY_FORM);
-  const [errors, setErrors] = useState({});
+  const [formData, setFormData] = useState<ProductFormState>(EMPTY_FORM);
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
 
-  const [editingProduct, setEditingProduct] = useState(null);
-  const [deletingId, setDeletingId] = useState(null);
+  const [editingProduct, setEditingProduct] = useState<SellerProduct | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   // Lấy danh sách sản phẩm của chính seller đang đăng nhập (GET /api/products/my-products)
   const loadOwnProducts = useCallback(async () => {
@@ -41,12 +60,12 @@ const SellerDashboard = () => {
     loadOwnProducts();
   }, [loadOwnProducts]);
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
   const validate = () => {
-    const newErrors = {};
+    const newErrors: Record<string, string> = {};
     if (!formData.name.trim()) newErrors.name = 'Tên sản phẩm không được để trống';
     if (!formData.description.trim()) newErrors.description = 'Mô tả không được để trống';
     if (formData.price === '' || Number(formData.price) < 0) newErrors.price = 'Giá không hợp lệ';
@@ -55,7 +74,7 @@ const SellerDashboard = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleAddProduct = async (e) => {
+  const handleAddProduct = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!validate()) return;
 
@@ -79,7 +98,7 @@ const SellerDashboard = () => {
     }
   };
 
-  const handleDelete = async (product) => {
+  const handleDelete = async (product: SellerProduct) => {
     if (!window.confirm(`Xóa sản phẩm "${product.name}"? Hành động này không thể hoàn tác.`)) {
       return;
     }
@@ -96,7 +115,7 @@ const SellerDashboard = () => {
     }
   };
 
-  const handleUpdated = (updatedProduct) => {
+  const handleUpdated = (updatedProduct: SellerProduct) => {
     setProducts((prev) => prev.map((p) => (p._id === updatedProduct._id ? updatedProduct : p)));
   };
 

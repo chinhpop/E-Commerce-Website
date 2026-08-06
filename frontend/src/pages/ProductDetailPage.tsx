@@ -4,14 +4,15 @@ import { useDispatch, useSelector } from 'react-redux';
 import toast from 'react-hot-toast';
 import { getProductById } from '../services/productService';
 import { addItemToCart } from '../store/slices/cartSlice';
+import type { AppDispatch, RootState } from '../store/store';
 
 const FALLBACK_IMAGE = 'https://placehold.co/600x600?text=No+Image';
 
 const ProductDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const dispatch = useDispatch();
-  const { user } = useSelector((state) => state.auth);
+  const dispatch = useDispatch<AppDispatch>();
+  const { user } = useSelector((state: RootState) => state.auth);
 
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -40,14 +41,23 @@ const ProductDetailPage = () => {
       return;
     }
 
+    if (!product?._id) {
+      toast.error('Không thể thêm sản phẩm này vào giỏ hàng');
+      return;
+    }
+
     setAdding(true);
     const result = await dispatch(addItemToCart({ productId: product._id, quantity: 1 }));
 
     if (addItemToCart.fulfilled.match(result)) {
       toast.success(`Đã thêm "${product.name}" vào giỏ hàng`);
     } else {
-      // result.payload là message lỗi từ backend, vd: "Chỉ còn 5 sản phẩm... trong kho"
-      toast.error(result.payload || 'Thêm vào giỏ hàng thất bại');
+      const message = typeof result.payload === 'string'
+        ? result.payload
+        : result.payload && typeof result.payload === 'object' && 'message' in result.payload && typeof (result.payload as { message?: unknown }).message === 'string'
+          ? (result.payload as { message: string }).message
+          : 'Thêm vào giỏ hàng thất bại';
+      toast.error(message);
     }
     setAdding(false);
   };

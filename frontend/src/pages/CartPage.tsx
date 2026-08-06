@@ -2,10 +2,13 @@ import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import toast from 'react-hot-toast';
+import type { AppDispatch, RootState } from '../store/store';
 import {
   fetchCart,
   updateItemQuantity,
   removeItemFromCart,
+  type CartItem,
+  type CartState,
 } from '../store/slices/cartSlice';
 
 const FALLBACK_IMAGE = 'https://placehold.co/120x120?text=No+Image';
@@ -25,15 +28,15 @@ const EmptyCart = () => (
 );
 
 const CartPage = () => {
-  const dispatch = useDispatch();
-  const { items, totalItems, totalPrice, loading } = useSelector((state) => state.cart);
+  const dispatch = useDispatch<AppDispatch>();
+  const { items, totalItems, totalPrice, loading } = useSelector((state: RootState) => state.cart) as CartState;
 
   useEffect(() => {
     dispatch(fetchCart());
   }, [dispatch]);
 
   // Backend nhận diện item qua product._id (route /api/cart/:productId), không phải item._id
-  const handleQuantityChange = async (productId, currentQty, delta, stock) => {
+  const handleQuantityChange = async (productId?: string, currentQty = 0, delta = 0, stock?: number) => {
     const newQty = currentQty + delta;
     if (newQty < 1) return; // dùng nút xóa thay vì cho về 0
     if (stock !== undefined && newQty > stock) {
@@ -41,18 +44,19 @@ const CartPage = () => {
       return;
     }
 
-    const result = await dispatch(updateItemQuantity({ productId, quantity: newQty }));
+    const safeProductId = productId ?? '';
+    const result = await dispatch(updateItemQuantity({ productId: safeProductId, quantity: newQty }));
     if (!updateItemQuantity.fulfilled.match(result)) {
-      toast.error(result.payload || 'Cập nhật số lượng thất bại');
+      toast.error(typeof result.payload === 'string' ? result.payload : 'Cập nhật số lượng thất bại');
     }
   };
 
-  const handleRemove = async (productId, name) => {
-    const result = await dispatch(removeItemFromCart(productId));
+  const handleRemove = async (productId?: string, name?: string) => {
+    const result = await dispatch(removeItemFromCart(productId ?? ''));
     if (removeItemFromCart.fulfilled.match(result)) {
-      toast.success(`Đã xóa "${name}" khỏi giỏ hàng`);
+      toast.success(`Đã xóa "${name ?? 'sản phẩm'}" khỏi giỏ hàng`);
     } else {
-      toast.error(result.payload || 'Xóa sản phẩm thất bại');
+      toast.error(typeof result.payload === 'string' ? result.payload : 'Xóa sản phẩm thất bại');
     }
   };
 

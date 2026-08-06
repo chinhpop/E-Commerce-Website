@@ -2,10 +2,11 @@ import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchProducts } from '../store/slices/productSlice';
 import ProductGrid from '../components/Product/ProductGrid';
+import type { AppDispatch, RootState } from '../store/store';
 
 const HomePage = () => {
-  const dispatch = useDispatch();
-  const { items, pagination, loading } = useSelector((state) => state.products);
+  const dispatch = useDispatch<AppDispatch>();
+  const { items, pagination, loading } = useSelector((state: RootState) => state.products);
   const [page, setPage] = useState(1);
 
   useEffect(() => {

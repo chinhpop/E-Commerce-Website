@@ -3,15 +3,16 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import toast from 'react-hot-toast';
 import { login } from '../store/slices/authSlice';
+import type { AppDispatch, RootState } from '../store/store';
 
 const LoginPage = () => {
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
-  const { loading } = useSelector((state) => state.auth);
+  const { loading } = useSelector((state: RootState) => state.auth);
 
-  const [formData, setFormData] = useState({ email: '', password: '' });
+  const [formData, setFormData] = useState<{ email: string; password: string }>({ email: '', password: '' });
 
-  const handleChange = (e) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
@@ -21,10 +22,11 @@ const LoginPage = () => {
     const result = await dispatch(login(formData));
 
     if (login.fulfilled.match(result)) {
-      toast.success(`Chào mừng trở lại, ${result.payload.user.name}!`);
+      const userName = result.payload?.user?.name ?? 'bạn';
+      toast.success(`Chào mừng trở lại, ${userName}!`);
       navigate('/');
     } else {
-      toast.error(result.payload || 'Đăng nhập thất bại');
+      toast.error(typeof result.payload === 'string' ? result.payload : 'Đăng nhập thất bại');
     }
   };
 

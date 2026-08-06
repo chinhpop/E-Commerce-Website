@@ -3,8 +3,35 @@ import toast from 'react-hot-toast';
 import { PRODUCT_CATEGORIES } from '../../constants/categories';
 import { updateProduct } from '../../services/productService';
 
-const EditProductModal = ({ product, onClose, onUpdated }) => {
-  const [formData, setFormData] = useState({
+type ProductLike = {
+  _id: string;
+  name: string;
+  description: string;
+  category: string;
+  price: number;
+  stock: number;
+  images?: string[];
+};
+
+type EditProductModalProps = {
+  product: ProductLike;
+  onClose: () => void;
+  onUpdated: (updatedProduct: ProductLike) => void;
+};
+
+type FormDataState = {
+  name: string;
+  description: string;
+  category: string;
+  price: number | string;
+  stock: number | string;
+  imageUrl: string;
+};
+
+type FormErrors = Partial<Record<'name' | 'description' | 'price' | 'stock', string>>;
+
+const EditProductModal = ({ product, onClose, onUpdated }: EditProductModalProps) => {
+  const [formData, setFormData] = useState<FormDataState>({
     name: product.name,
     description: product.description,
     category: product.category,
@@ -12,15 +39,16 @@ const EditProductModal = ({ product, onClose, onUpdated }) => {
     stock: product.stock,
     imageUrl: product.images?.[0] || '',
   });
-  const [errors, setErrors] = useState({});
+  const [errors, setErrors] = useState<FormErrors>({});
   const [submitting, setSubmitting] = useState(false);
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const validate = () => {
-    const newErrors = {};
+    const newErrors: FormErrors = {};
     if (!formData.name.trim()) newErrors.name = 'Tên sản phẩm không được để trống';
     if (!formData.description.trim()) newErrors.description = 'Mô tả không được để trống';
     if (formData.price === '' || Number(formData.price) < 0) newErrors.price = 'Giá không hợp lệ';
@@ -29,7 +57,7 @@ const EditProductModal = ({ product, onClose, onUpdated }) => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!validate()) return;
 
@@ -44,7 +72,7 @@ const EditProductModal = ({ product, onClose, onUpdated }) => {
         images: formData.imageUrl ? [formData.imageUrl] : [],
       });
       toast.success('Cập nhật sản phẩm thành công');
-      onUpdated(updated);
+      onUpdated(updated as ProductLike);
       onClose();
     } catch (err) {
       toast.error(err.response?.data?.message || 'Cập nhật thất bại');

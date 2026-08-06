@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import toast from 'react-hot-toast';
+import type { RootState } from '../store/store';
 
 /**
  * Bọc quanh 1 route để yêu cầu đăng nhập, và tuỳ chọn giới hạn theo role.
@@ -12,7 +13,7 @@ import toast from 'react-hot-toast';
  *   </ProtectedRoute>
  */
 const ProtectedRoute = ({ children, allowedRoles }) => {
-  const { user } = useSelector((state) => state.auth);
+  const { user } = useSelector((state: RootState) => state.auth);
   const location = useLocation();
 
   const isForbidden = user && allowedRoles && !allowedRoles.includes(user.role);

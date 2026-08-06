@@ -5,11 +5,12 @@ import toast from "react-hot-toast";
 import api from "../services/api";
 import { logout } from "../store/slices/authSlice";
 import { fetchCart, resetCart } from "../store/slices/cartSlice";
+import type { AppDispatch, RootState } from "../store/store";
 
 const Navbar = () => {
-  const { user } = useSelector((state) => state.auth);
-  const { totalItems } = useSelector((state) => state.cart);
-  const dispatch = useDispatch();
+  const { user } = useSelector((state: RootState) => state.auth);
+  const { totalItems } = useSelector((state: RootState) => state.cart);
+  const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
 
   // Tải giỏ hàng ngay khi có user đăng nhập (để badge hiện đúng số lượng

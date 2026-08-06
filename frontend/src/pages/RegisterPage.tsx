@@ -3,26 +3,27 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import toast from 'react-hot-toast';
 import { register } from '../store/slices/authSlice';
+import type { AppDispatch, RootState } from '../store/store';
 
 const RegisterPage = () => {
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
-  const { loading } = useSelector((state) => state.auth);
+  const { loading } = useSelector((state: RootState) => state.auth);
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{ name: string; email: string; password: string; confirmPassword: string }>({
     name: '',
     email: '',
     password: '',
     confirmPassword: '',
   });
-  const [errors, setErrors] = useState({});
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const handleChange = (e) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const validate = () => {
-    const newErrors = {};
+    const newErrors: Record<string, string> = {};
     const emailRegex = /^\S+@\S+\.\S+$/;
 
     if (!formData.name.trim()) newErrors.name = 'Vui lòng nhập tên';
@@ -48,7 +49,7 @@ const RegisterPage = () => {
       toast.success('Đăng ký thành công!');
       navigate('/');
     } else {
-      toast.error(result.payload || 'Đăng ký thất bại');
+      toast.error(typeof result.payload === 'string' ? result.payload : 'Đăng ký thất bại');
     }
   };
 
