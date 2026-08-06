@@ -4,8 +4,8 @@ import { BrowserRouter } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import { Toaster } from 'react-hot-toast';
 
-import App from './App.jsx';
-import { store } from './store/store.js';
+import App from './App';
+import { store } from './store/store';
 import './index.css';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
